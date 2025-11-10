@@ -20,6 +20,7 @@ ADMIN_USER = os.getenv("ADMIN_USER", "admin")
 ADMIN_PASS = os.getenv("ADMIN_PASS", "DTN-2025-secure-base")
 BOARD_TITLE = os.getenv("BOARD_TITLE", "DTN SmartOps")
 
+
 def get_db():
     db = SessionLocal()
     try:
@@ -27,9 +28,11 @@ def get_db():
     finally:
         db.close()
 
+
 @app.get("/", response_class=HTMLResponse)
 def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
+
 
 @app.post("/login")
 def login(request: Request, username: str = Form(...), password: str = Form(...)):
@@ -37,6 +40,7 @@ def login(request: Request, username: str = Form(...), password: str = Form(...)
         request.session["logged_in"] = True
         return RedirectResponse("/board", status_code=302)
     raise HTTPException(status_code=401, detail="Identifiants invalides")
+
 
 @app.get("/board", response_class=HTMLResponse)
 def board(request: Request, db: Session = Depends(get_db)):
@@ -50,3 +54,8 @@ def board(request: Request, db: Session = Depends(get_db)):
         db.refresh(board)
     columns = db.query(Column).filter(Column.board_id == board.id).all()
     return templates.TemplateResponse("board.html", {"request": request, "board": board, "columns": columns})
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=10000)
